@@ -26,8 +26,10 @@ public class Minesweeper {
 
     MineTile[][] mineTiles=new MineTile[numrows][numcols];
 
+    ArrayList<MineTile>minelist;
+
     Minesweeper(){
-        frame.setVisible(true);
+       
         frame.setSize(boardsize,boardsize);
         frame.setLocationRelativeTo(null);
         frame.setResizable(false);
@@ -55,11 +57,52 @@ public class Minesweeper {
                 tile.setFocusable(false);
                 tile.setMargin(new Insets(0,0,0,0));
                 tile.setFont(new Font("Arial Unicode MS",Font.BOLD,45));
+                // tile.setText("💣");
+                tile.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e){
+                        MineTile tile=(MineTile)e.getSource();
+
+                        //left click
+                        if(e.getButton()==MouseEvent.BUTTON1){
+                            if(tile.getText().isEmpty()){
+                                if(minelist.contains(tile))
+                                {
+                                    revealMine();
+                                    textLabel.setText("Game Over!");
+                                }
+                            }
+                        }
+                    }
+                    
+                });
+
                 boardPanel.add(tile);
             }
         }
+         frame.setVisible(true);
+         setMines();
+
 
     }
+
+    void setMines()
+    {
+        minelist=new ArrayList<MineTile>();
+        minelist.add(mineTiles[1][1]);
+        minelist.add(mineTiles[2][2]);
+        minelist.add(mineTiles[3][3]);  
+        minelist.add(mineTiles[4][4]);
+    }
+    void revealMine()
+    {
+        for(int i=0;i<minelist.size();i++)
+        {
+            MineTile tile=minelist.get(i);
+            tile.setText("💣");
+        }
+    }
+
     public static void main(String[] args) {
     new Minesweeper();
 }
