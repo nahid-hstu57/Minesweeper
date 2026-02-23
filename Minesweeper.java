@@ -25,7 +25,9 @@ public class Minesweeper {
 
     JLabel textLabel = new JLabel();
     JPanel boardPanel = new JPanel();
-    JButton restartButton;  
+    JButton restartButton;
+
+    JButton menuButton;
 
     MineTile[][] mineTiles;
     ArrayList<MineTile> minelist;
@@ -53,7 +55,7 @@ public class Minesweeper {
 
         JButton button = new JButton(text);
 
-        button.setFont(new Font("Arial", Font.BOLD, 22));
+        button.setFont(new Font("Arial", Font.BOLD, 18));
         button.setFocusPainted(false);
         button.setBackground(new Color(50, 50, 50));
         button.setForeground(Color.WHITE);
@@ -82,8 +84,12 @@ public class Minesweeper {
 
         state = GameState.MENU;
 
+        if (gameFrame != null) {
+            gameFrame.dispose();
+        }
+
         menuFrame = new JFrame("Select Difficulty");
-        menuFrame.setSize(400, 500);
+        menuFrame.setSize(400, 600);
         menuFrame.setLocationRelativeTo(null);
         menuFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         menuFrame.setLayout(new BorderLayout());
@@ -91,13 +97,13 @@ public class Minesweeper {
         JLabel title = new JLabel("MINESWEEPER");
         title.setFont(new Font("Arial", Font.BOLD, 40));
         title.setHorizontalAlignment(JLabel.CENTER);
-        title.setForeground(new Color(0, 0, 0));
 
         menuFrame.add(title, BorderLayout.NORTH);
 
+
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(3, 1, 15, 15));
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(80, 60, 80, 60));
+        buttonPanel.setLayout(new GridLayout(6, 1, 15, 15));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(50, 60, 50, 60));
 
         JButton easy = createStyledButton("Easy");
         JButton medium = createStyledButton("Medium");
@@ -107,12 +113,42 @@ public class Minesweeper {
         medium.addActionListener(e -> startGame(8, 8, 20));
         hard.addActionListener(e -> startGame(10, 10, 40));
 
+    
+        JLabel customLabel = new JLabel("Custom Mines: (Maximum 63)");
+        customLabel.setHorizontalAlignment(JLabel.CENTER);
+        customLabel.setFont(new Font("Arial", Font.BOLD, 18));
+
+        JTextField mineInput = new JTextField();
+        mineInput.setHorizontalAlignment(JTextField.CENTER);
+        mineInput.setFont(new Font("Arial", Font.BOLD, 18));
+
+        JButton customStart = createStyledButton("Start Custom ");
+
+        customStart.addActionListener(e -> {
+            try {
+                int mines = Integer.parseInt(mineInput.getText());
+
+                if (mines > 0 && mines < 64) {
+                    startGame(8, 8, mines);
+                } else {
+                    JOptionPane.showMessageDialog(menuFrame,
+                            "Enter mines between 1 and 63");
+                }
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(menuFrame,
+                        "Enter valid number");
+            }
+        });
+
         buttonPanel.add(easy);
         buttonPanel.add(medium);
         buttonPanel.add(hard);
+        buttonPanel.add(customLabel);
+        buttonPanel.add(mineInput);
+        buttonPanel.add(customStart);
 
         menuFrame.add(buttonPanel, BorderLayout.CENTER);
-
         menuFrame.setVisible(true);
     }
 
@@ -131,26 +167,39 @@ public class Minesweeper {
         tilesClicked = 0;
         gameOver = false;
 
-        gameFrame = new JFrame("Minesweeper: " + minecount);
-        gameFrame.setSize(boardsize, boardsize + 60);
+        gameFrame = new JFrame("Minesweeper");
+        gameFrame.setSize(boardsize, boardsize + 80);
         gameFrame.setLocationRelativeTo(null);
         gameFrame.setResizable(false);
         gameFrame.setLayout(new BorderLayout());
         gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        textLabel = new JLabel("Minesweeper");
-        textLabel.setFont(new Font("Arial", Font.BOLD, 25));
+        textLabel = new JLabel("Game Started");
+        textLabel.setFont(new Font("Arial", Font.BOLD, 20));
         textLabel.setHorizontalAlignment(JLabel.CENTER);
 
         restartButton = createStyledButton("Restart");
 
+        // ===== ADDED: Menu button =====
+        menuButton = createStyledButton("Menu");
+
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(textLabel, BorderLayout.CENTER);
-        topPanel.add(restartButton, BorderLayout.EAST);
+
+        JPanel topButtons = new JPanel();
+        topButtons.add(menuButton);
+        topButtons.add(restartButton);
+
+        topPanel.add(topButtons, BorderLayout.EAST);
 
         gameFrame.add(topPanel, BorderLayout.NORTH);
 
         restartButton.addActionListener(e -> restartGame());
+
+        menuButton.addActionListener(e -> {
+            gameFrame.dispose();
+            showMenu();
+        });
 
         boardPanel = new JPanel();
         boardPanel.setLayout(new GridLayout(numrows, numcols));
@@ -165,7 +214,7 @@ public class Minesweeper {
 
                 tile.setFocusable(false);
                 tile.setMargin(new Insets(0, 0, 0, 0));
-                tile.setFont(new Font("Arial Unicode MS", Font.BOLD, 25));
+                tile.setFont(new Font("Arial Unicode MS", Font.BOLD, 18));
 
                 tile.addMouseListener(new MouseAdapter() {
                     public void mouseClicked(MouseEvent e) {
@@ -176,7 +225,7 @@ public class Minesweeper {
 
                         if (e.getButton() == MouseEvent.BUTTON1) {
 
-                            if (t.getText().equals("")) {
+                            if (t.isEnabled()) {
 
                                 if (minelist.contains(t)) {
                                     revealMine();
@@ -202,6 +251,10 @@ public class Minesweeper {
         }
 
         setMines();
+
+        mineTiles[0][0].setText("START"); 
+        mineTiles[0][0].setFont(new Font("Serif",Font.BOLD,10)); 
+
         gameFrame.setVisible(true);
     }
 
@@ -214,7 +267,8 @@ public class Minesweeper {
 
             MineTile tile = mineTiles[r][c];
 
-            if (!minelist.contains(tile)) {
+            // ===== MODIFIED: Prevent mine at (0,0) =====
+            if (!minelist.contains(tile) && !(r == 0 && c == 0)) {
                 minelist.add(tile);
                 mineleft--;
             }
@@ -251,7 +305,6 @@ public class Minesweeper {
         if (minesfound > 0) {
             tile.setText(String.valueOf(minesfound));
         } else {
-            tile.setText("");
 
             for (int i = -1; i <= 1; i++)
                 for (int j = -1; j <= 1; j++)
