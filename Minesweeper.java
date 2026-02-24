@@ -109,12 +109,12 @@ public class Minesweeper {
         JButton medium = createStyledButton("Medium");
         JButton hard = createStyledButton("Hard");
 
-        easy.addActionListener(e -> startGame(8, 8, 10));
-        medium.addActionListener(e -> startGame(8, 8, 20));
-        hard.addActionListener(e -> startGame(10, 10, 40));
+        easy.addActionListener(e -> startGame(10, 10, 10));
+        medium.addActionListener(e -> startGame(10, 10, 16));
+        hard.addActionListener(e -> startGame(10, 10, 22));
 
     
-        JLabel customLabel = new JLabel("Custom Mines: (Maximum 63)");
+        JLabel customLabel = new JLabel("Custom Mines: (Maximum 99)");
         customLabel.setHorizontalAlignment(JLabel.CENTER);
         customLabel.setFont(new Font("Arial", Font.BOLD, 18));
 
@@ -128,11 +128,11 @@ public class Minesweeper {
             try {
                 int mines = Integer.parseInt(mineInput.getText());
 
-                if (mines > 0 && mines < 64) {
-                    startGame(8, 8, mines);
+                if (mines > 0 && mines < 100) {
+                    startGame(10, 10, mines);
                 } else {
                     JOptionPane.showMessageDialog(menuFrame,
-                            "Enter mines between 1 and 63");
+                            "Enter mines between 1 and 99");
                 }
 
             } catch (Exception ex) {
@@ -167,7 +167,7 @@ public class Minesweeper {
         tilesClicked = 0;
         gameOver = false;
 
-        gameFrame = new JFrame("Minesweeper");
+        gameFrame = new JFrame("Minesweeper :"+mines);
         gameFrame.setSize(boardsize, boardsize + 80);
         gameFrame.setLocationRelativeTo(null);
         gameFrame.setResizable(false);
@@ -180,7 +180,6 @@ public class Minesweeper {
 
         restartButton = createStyledButton("Restart");
 
-        // ===== ADDED: Menu button =====
         menuButton = createStyledButton("Menu");
 
         JPanel topPanel = new JPanel(new BorderLayout());
@@ -252,8 +251,8 @@ public class Minesweeper {
 
         setMines();
 
-        mineTiles[0][0].setText("START"); 
-        mineTiles[0][0].setFont(new Font("Serif",Font.BOLD,10)); 
+        mineTiles[4][4].setText("START"); 
+        // mineTiles[4][4].setFont(new Font("Serif",Font.BOLD,10)); 
 
         gameFrame.setVisible(true);
     }
@@ -267,8 +266,8 @@ public class Minesweeper {
 
             MineTile tile = mineTiles[r][c];
 
-            // ===== MODIFIED: Prevent mine at (0,0) =====
-            if (!minelist.contains(tile) && !(r == 0 && c == 0)) {
+
+            if (!minelist.contains(tile) && !(r == 4 && c == 4)) {
                 minelist.add(tile);
                 mineleft--;
             }
